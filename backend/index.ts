@@ -105,7 +105,7 @@ function analyse(handbookData: any[]): HandbookData[] {
           );
           result.cellOriginiumAssimilation = null;
         }
-        const temp2 = /【?血液内?源石结?晶?密度】?：?(.*?)u\/L/m.exec(
+        const temp2 = /【?血液内?中?源石结?晶?密度】?：?(.*?)u\/L/m.exec(
           storyTextAudio[i].stories[0].storyText
         );
         if (temp2?.length == 2) {

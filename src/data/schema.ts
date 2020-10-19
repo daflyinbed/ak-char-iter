@@ -93,23 +93,28 @@ export interface Basic {
   _name: string;
   _id: string;
 }
+export interface Fix<T1, T2> {
+  origin: T1;
+  fix: T2 | null;
+}
 export interface HandbookData extends Basic {
   //handbook
   painter: string; //画师
   dubber: string; //配音
   gender: string; //性别
-  combatExperience: string | null; //战斗经验
-  birthplace: string | null; //出生地
-  birthday: string | null; //出生日
-  race: string | null; //种族
-  height: number | null; //身高
+  combatExperience: string | Fix<string, string>; //战斗经验
+  birthplace: string | Fix<string, string>; //出生地
+  birthday: string | Fix<string, string>; //出生日
+  race: string | Fix<string, string>; //种族
+  height: number | Fix<string, number>; //身高
   infectionStatus: InfectionStatus; //感染状态
-  physicalStrength: string | null; //物理强度
-  battlefieldManeuver: string | null; //战场机动
-  physiologicalTolerance: string | null; //生理耐受
-  tacticalPlanning: string | null; //战术规划
-  combatSkills: string | null; //战斗技巧
-  originiumArtsAssimilation: string | null; //源石技艺适应性
-  cellOriginiumAssimilation: number | null; //体细胞与源石融合率
-  bloodOriginiumCrystalDensity: number | null; //血液源石结晶密度
+  
+  physicalStrength: string | Fix<string, string>; //物理强度
+  battlefieldManeuver: string | Fix<string, string>; //战场机动
+  physiologicalTolerance: string | Fix<string, string>; //生理耐受
+  tacticalPlanning: string | Fix<string, string>; //战术规划
+  combatSkills: string | Fix<string, string>; //战斗技巧
+  originiumArtsAssimilation: string | Fix<string, string>; //源石技艺适应性
+  cellOriginiumAssimilation: number | Fix<string, number>; //体细胞与源石融合率
+  bloodOriginiumCrystalDensity: number | Fix<string, number>; //血液源石结晶密度
 }
