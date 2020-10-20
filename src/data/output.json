@@ -1695,31 +1695,6 @@
     "bloodOriginiumCrystalDensity": 0.09
   },
   {
-    "painter": "Unknown",
-    "dubber": "Unknown",
-    "_id": "npc_2005_wywu"
-  },
-  {
-    "painter": "Unknown",
-    "dubber": "Unknown",
-    "_id": "npc_2006_fmzuki"
-  },
-  {
-    "painter": "Unknown",
-    "dubber": "Unknown",
-    "_id": "npc_003_kalts"
-  },
-  {
-    "painter": "Unknown",
-    "dubber": "Unknown",
-    "_id": "npc_010_chen"
-  },
-  {
-    "painter": "Unknown",
-    "dubber": "Unknown",
-    "_id": "npc_001_doctor"
-  },
-  {
     "painter": "TOKI",
     "dubber": "藤村步",
     "_name": "暴行",

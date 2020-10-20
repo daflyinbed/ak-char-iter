@@ -108,7 +108,7 @@ export interface HandbookData extends Basic {
   race: string | Fix<string, string>; //种族
   height: number | Fix<string, number>; //身高
   infectionStatus: InfectionStatus; //感染状态
-  
+
   physicalStrength: string | Fix<string, string>; //物理强度
   battlefieldManeuver: string | Fix<string, string>; //战场机动
   physiologicalTolerance: string | Fix<string, string>; //生理耐受
