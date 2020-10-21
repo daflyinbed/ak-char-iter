@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-
+import { concat } from "lodash";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 import Paper from "@material-ui/core/Paper";
@@ -11,38 +11,15 @@ import Slider from "@material-ui/core/Slider";
 import Accordion from "@material-ui/core/Accordion";
 import AccordionSummary from "@material-ui/core/AccordionSummary";
 import AccordionDetails from "@material-ui/core/AccordionDetails";
-
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TablePagination from "@material-ui/core/TablePagination";
-import TableRow from "@material-ui/core/TableRow";
+import { DataTable } from "./DataTable";
 import { HandbookData, Fix } from "../data/schema";
 import "./iter.css";
 import data from "../data/output";
+
 import { MultiSelect } from "./MultSelect";
 import { Chips } from "./Chips";
-const Types = [
-  "画师",
-  "配音",
-  "战斗经验",
-  "出生地",
-  "出生日",
-  "种族",
-  "身高",
-  "感染状态",
-  "物理强度",
-  "战场机动",
-  "生理耐受",
-  "战术规划",
-  "战斗技巧",
-  "源石技艺适应性",
-  "体细胞与源石融合率",
-  "血液源石结晶密度",
-];
-const TypesMap = {
+
+const TypesMap: Record<string, string> = {
   画师: "painter",
   配音: "dubber",
   性别: "gender",
@@ -60,6 +37,25 @@ const TypesMap = {
   源石技艺适应性: "originiumArtsAssimilation",
   体细胞与源石融合率: "cellOriginiumAssimilation",
   血液源石结晶密度: "bloodOriginiumCrystalDensity",
+};
+const TypesMap2: Record<string, string> = {
+  painter: "画师",
+  dubber: "配音",
+  gender: "性别",
+  combatExperience: "战斗经验",
+  birthplace: "出生地",
+  birthday: "出生日",
+  race: "种族",
+  height: "身高",
+  infectionStatus: "感染状态",
+  physicalStrength: "物理强度",
+  battlefieldManeuver: "战场机动",
+  physiologicalTolerance: "生理耐受",
+  tacticalPlanning: "战术规划",
+  combatSkills: "战斗技巧",
+  originiumArtsAssimilation: "源石技艺适应性",
+  cellOriginiumAssimilation: "体细胞与源石融合率",
+  bloodOriginiumCrystalDensity: "血液源石结晶密度",
 };
 const useStyles = makeStyles({
   root: {
@@ -140,10 +136,37 @@ function calcPossibleTypes(data: HandbookData[]): Record<string, string[]> {
   });
   return result2;
 }
+
 const possibleTypes = calcPossibleTypes(data as HandbookData[]);
+const is = ["未感染", "感染", "其他"];
+const isNull = (data: any): boolean =>
+  !data && typeof data != "undefined" && data != 0;
+const coaStr = (data: any): string => (!isNull(data) ? `${data}%` : "");
+const bocdStr = (data: any): string => (!isNull(data) ? `${data}u/L` : "");
+const makeStr = (type: string, data: any): string => {
+  switch (type) {
+    case "infectionStatus":
+      return is[data];
+    case "cellOriginiumAssimilation":
+      return coaStr(data);
+    case "bloodOriginiumCrystalDensity":
+      return bocdStr(data);
+    default:
+      return data;
+  }
+};
+
+export function MyCell(value: any, colID: string): JSX.Element {
+  if (typeof value == "object") {
+    const v = value.fix;
+    return <div>{makeStr(colID, v)}</div>;
+  } else {
+    const v = value;
+    return <div>{makeStr(colID, v)}</div>;
+  }
+}
 export function Iter(): JSX.Element {
   const classes = useStyles();
-  const [isMobile, setIsMobile] = useState(false);
   const [shownType, setShownType] = useState<string[]>([]);
   const [gender, setGender] = useState<string[]>([]);
   const [ce, setCE] = useState<string[]>([]);
@@ -162,6 +185,7 @@ export function Iter(): JSX.Element {
   const [coa, setCOA] = useState<number[]>([0, 20]);
   const [bocd, setBOCD] = useState<number[]>([0, 1]);
   const [height, setHeightStatus] = useState<number[]>([100, 200]);
+
   const handleShownTypeChange = (
     event: React.ChangeEvent<{ value: unknown }>
   ) => {
@@ -226,14 +250,18 @@ export function Iter(): JSX.Element {
     setDubber(newValue);
   };
   useEffect(() => {
-    setIsMobile(
-      !!window.navigator.userAgent.match(
-        /(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i
-      )
-    );
     console.log(data);
     console.log(possibleTypes);
   }, []);
+  const columns = concat(
+    { id: "_name", name: "干员名" },
+    shownType.map((v) => {
+      return {
+        id: TypesMap[v],
+        name: v,
+      };
+    })
+  );
   return (
     <div className={classes.root}>
       <Accordion>
@@ -245,13 +273,13 @@ export function Iter(): JSX.Element {
         >
           <MultiSelect
             className={classes.multiSelect}
-            options={Types}
+            options={Object.keys(TypesMap)}
             labelID="types-label"
             onChange={handleShownTypeChange}
             selected={shownType}
             labelRender={() => (
               <div>
-                显示的属性({shownType.length}/{Types.length})
+                显示的属性({shownType.length}/{Object.keys(TypesMap).length})
               </div>
             )}
           />
@@ -291,6 +319,7 @@ export function Iter(): JSX.Element {
             disableCloseOnSelect
             size="small"
             limitTags={2}
+            onChange={handleDubberChange}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -374,7 +403,7 @@ export function Iter(): JSX.Element {
           />
           <div className={classes.heightSlider}>
             <div>
-              身高 ({height[0]} - {height[1]})
+              身高 ({height[0]}cm - {height[1]}cm)
             </div>
             <Slider
               value={height}
@@ -471,7 +500,7 @@ export function Iter(): JSX.Element {
           />
           <div className={`${classes.half} ${classes.halfSlider}`}>
             <div>
-              体细胞与源石融合率 ({coa[0]} - {coa[1]})
+              体细胞与源石融合率 ({coa[0]}% - {coa[1]}%)
             </div>
             <Slider
               value={coa}
@@ -485,7 +514,7 @@ export function Iter(): JSX.Element {
           </div>
           <div className={`${classes.half} ${classes.halfSlider}`}>
             <div>
-              血液源石结晶密度 ({bocd[0]} - {bocd[1]})
+              血液源石结晶密度 ({bocd[0]}u/L - {bocd[1]}u/L)
             </div>
             <Slider
               value={bocd}
@@ -499,7 +528,32 @@ export function Iter(): JSX.Element {
           </div>
         </AccordionDetails>
       </Accordion>
-      <Paper>{isMobile}</Paper>
+      <Paper>
+        <DataTable
+          data={data as HandbookData[]}
+          columns={columns}
+          filter={{
+            painter: { data: painter, filter: "include" },
+            dubber: { data: dubber, filter: "include" },
+            gender: { data: gender, filter: "include" },
+            combatExperience: { data: ce, filter: "include" },
+            birthplace: { data: birthplace, filter: "include" },
+            birthday: { data: birthday, filter: "include" },
+            race: { data: race, filter: "include" },
+            height: { data: height, filter: "between" },
+            infectionStatus: { data: infectionStatus, filter: "include" },
+            physicalStrength: { data: ps, filter: "include" },
+            battlefieldManeuver: { data: bm, filter: "include" },
+            physiologicalTolerance: { data: pt, filter: "include" },
+            tacticalPlanning: { data: tp, filter: "include" },
+            combatSkills: { data: cs, filter: "include" },
+            originiumArtsAssimilation: { data: oa, filter: "include" },
+            cellOriginiumAssimilation: { data: coa, filter: "between" },
+            bloodOriginiumCrystalDensity: { data: bocd, filter: "between" },
+          }}
+          render={MyCell}
+        ></DataTable>
+      </Paper>
     </div>
   );
 }

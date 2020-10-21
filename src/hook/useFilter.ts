@@ -56,32 +56,6 @@ export function useFilter(
           }
         });
         return firstNotMatchColumn == -1;
-        // const firstNotMatchColumn = filter.findIndex((f) => {
-        //   if (typeof f.filter == "string") {
-        //     switch (f.filter) {
-        //       case "include":
-        //         return !includeFilter(filter[f.id].data, v[f.id]);
-        //       case "equal":
-        //         return !equalFilter(filter[f.id], v[f.id]);
-        //       case "between":
-        //         return !betweenFilter(
-        //           filter[f.id].max,
-        //           filter[f.id].min,
-        //           v[f.id]
-        //         );
-        //       case "fuzzyText":
-        //         return !fuzzyTextFilter(filter[f.id], v[f.id]);
-        //       default:
-        //         console.warn(`unExcepted filter ${f.filter}`);
-        //         return true;
-        //     }
-        //   } else if (!f.filter) {
-        //     return fuzzyTextFilter(filter[f.id], v[f.id]);
-        //   } else {
-        //     return !f.filter(v[f.id]);
-        //   }
-        // });
-        // return firstNotMatchColumn == -1;
       });
       setState(FilterResult);
     }, wait),
