@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { matchSorter } from "match-sorter";
-import { debounce } from "lodash";
+import { useDebounce } from "./useDebounce";
 export interface FilterFunc {
   (value: any): boolean;
 }
@@ -29,8 +29,8 @@ export function useFilter(
   wait = 500
 ): [Data[], (data: Data[], filter: Record<string, Filter>) => void] {
   const [state, setState] = useState(data);
-  const _debounce = useCallback(
-    debounce((data: Data[], filter: Record<string, Filter>) => {
+  const _debounce = useDebounce(
+    (data: Data[], filter: Record<string, Filter>) => {
       console.log("start filter");
       const FilterResult = data.filter((v) => {
         const firstNotMatchColumn = Object.keys(filter).findIndex((fid) => {
@@ -58,9 +58,41 @@ export function useFilter(
         return firstNotMatchColumn == -1;
       });
       setState(FilterResult);
-    }, wait),
-    []
+    },
+    wait
   );
+  // const _debounce = useCallback(
+  //   debounce((data: Data[], filter: Record<string, Filter>) => {
+  //     console.log("start filter");
+  //     const FilterResult = data.filter((v) => {
+  //       const firstNotMatchColumn = Object.keys(filter).findIndex((fid) => {
+  //         const f = filter[fid];
+  //         if (typeof f.filter == "string") {
+  //           switch (f.filter) {
+  //             case "include":
+  //               return !includeFilter(f.data, v[fid]);
+  //             case "equal":
+  //               return !equalFilter(f.data, v[fid]);
+  //             case "between":
+  //               return !betweenFilter(f.data[0], f.data[1], v[fid]);
+  //             case "fuzzyText":
+  //               return !fuzzyTextFilter(f.data, v[fid]);
+  //             default:
+  //               console.warn(`unknwon filter ${fid}`);
+  //               return true;
+  //           }
+  //         } else if (!f.filter) {
+  //           return fuzzyTextFilter(f.data, v[fid]);
+  //         } else {
+  //           return !f.filter(v[fid]);
+  //         }
+  //       });
+  //       return firstNotMatchColumn == -1;
+  //     });
+  //     setState(FilterResult);
+  //   }, wait),
+  //   []
+  // );
   const setDebouncedState = (data: Data[], filter: Record<string, Filter>) => {
     console.log("setDebouncedState");
     _debounce(data, filter);
