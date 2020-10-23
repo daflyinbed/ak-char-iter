@@ -184,7 +184,7 @@ export function Iter(): JSX.Element {
   const [oa, setOA] = useState<string[]>([]);
   const [coa, setCOA] = useState<number[]>([0, 20]);
   const [bocd, setBOCD] = useState<number[]>([0, 1]);
-  const [height, setHeightStatus] = useState<number[]>([100, 200]);
+  const [height, setHeightStatus] = useState<number[]>([130, 200]);
 
   const handleShownTypeChange = (
     event: React.ChangeEvent<{ value: unknown }>
@@ -381,7 +381,7 @@ export function Iter(): JSX.Element {
             options={possibleTypes.infectionStatus}
             labelID="infectionStatus-label"
             onChange={handleInfectionStatusChange}
-            selected={race}
+            selected={infectionStatus}
             labelRender={() => (
               <div>
                 是否感染({infectionStatus.length}/
@@ -410,7 +410,7 @@ export function Iter(): JSX.Element {
               onChange={handleHeightChange}
               valueLabelDisplay="auto"
               aria-labelledby="range-slider"
-              min={100}
+              min={130}
               max={200}
             />
           </div>
@@ -541,7 +541,10 @@ export function Iter(): JSX.Element {
             birthday: { data: birthday, filter: "include" },
             race: { data: race, filter: "include" },
             height: { data: height, filter: "between" },
-            infectionStatus: { data: infectionStatus, filter: "include" },
+            infectionStatus: {
+              data: infectionStatus.map((v) => is.indexOf(v)),
+              filter: "include",
+            },
             physicalStrength: { data: ps, filter: "include" },
             battlefieldManeuver: { data: bm, filter: "include" },
             physiologicalTolerance: { data: pt, filter: "include" },
