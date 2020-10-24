@@ -8,8 +8,7 @@ import TablePagination from "@material-ui/core/TablePagination";
 import TableRow from "@material-ui/core/TableRow";
 import TableSortLabel from "@material-ui/core/TableSortLabel";
 import { makeStyles } from "@material-ui/core/styles";
-import { Filter, Data, useFilter } from "../hook/useFilter";
-
+import { Filter, Data, useFilter, Orders, Order } from "../hook/useFilter";
 interface Column {
   id: string;
   name: string;
@@ -23,9 +22,9 @@ interface Props {
   columns: Column[];
   filter: Record<string, Filter>;
   render: Render;
+  compareFunc: (a: any, b: any, id: string) => number;
 }
 
-type Order = undefined | "asc" | "desc";
 const useStyles = makeStyles({
   badge: {
     marginLeft: "4px",
@@ -45,17 +44,23 @@ const useStyles = makeStyles({
 const OrderArr = [undefined, "asc", "desc"];
 export function DataTable(props: Props): JSX.Element {
   const classes = useStyles();
-  const [filterResult, setFilter] = useFilter(props.data);
-  useEffect(() => {
-    setFilter(props.data, props.filter);
-  }, [props.data, props.filter]);
-  useEffect(() => {
-    setPage(0);
-  }, [filterResult]);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [filterResult, setFilter] = useFilter(props.data, props.compareFunc);
   const [order, dispatchOrder] = useReducer(
-    (state: Record<string, Order | string[]>, id: string) => {
+    (
+      state: Record<string, Order | string[]>,
+      action: { ac?: string; ids: string[] }
+    ) => {
+      const { ac, ids } = action;
+      if (ac == "remove") {
+        const cp = { ...state };
+        ids.forEach((id: string) => {
+          delete cp[id];
+          cp._order = (cp._order as string[]).filter((str) => str != id);
+        });
+        console.log(cp._order);
+        return cp;
+      }
+      const id = ids[0];
       let index = OrderArr.indexOf(state[id] as Order);
       if (index == -1) {
         index = 1;
@@ -72,10 +77,40 @@ export function DataTable(props: Props): JSX.Element {
         (result._order as string[]).push(id);
         result._order = Array.from(new Set(result._order));
       }
+      console.log(result._order);
       return result;
     },
     { _order: [] }
   );
+  useEffect(() => {
+    dispatchOrder({
+      ac: "remove",
+      ids: (order._order as string[]).filter((o) => {
+        return (
+          props.columns.findIndex((v) => {
+            return v.id == o;
+          }) == -1
+        );
+      }),
+    });
+  }, [props.columns]);
+  useEffect(() => {
+    setFilter(
+      props.data,
+      props.filter,
+      (order._order as string[]).map((v) => {
+        return {
+          id: v,
+          order: order[v],
+        };
+      }) as Orders[]
+    );
+  }, [props.data, props.filter, order]);
+  useEffect(() => {
+    setPage(0);
+  }, [filterResult]);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -106,7 +141,7 @@ export function DataTable(props: Props): JSX.Element {
                   <TableCell key={v.id} sortDirection={order[v.id] as Order}>
                     <TableSortLabel
                       onClick={() => {
-                        dispatchOrder(v.id);
+                        dispatchOrder({ ids: [v.id] });
                       }}
                       active={!!order[v.id]}
                       direction={order[v.id] as Order}
@@ -120,7 +155,6 @@ export function DataTable(props: Props): JSX.Element {
                     </TableSortLabel>
                   </TableCell>
                 );
-                // return <TableCell key={v.id}>{v.name}</TableCell>;
               })}
             </TableRow>
           </TableHead>

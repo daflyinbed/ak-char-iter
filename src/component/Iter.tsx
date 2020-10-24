@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { makeStyles } from "@material-ui/core/styles";
-import { concat } from "lodash";
+import { concat, indexOf } from "lodash";
 import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 
 import Paper from "@material-ui/core/Paper";
@@ -18,6 +18,7 @@ import data from "../data/output";
 
 import { MultiSelect } from "./MultSelect";
 import { Chips } from "./Chips";
+import { parseMD } from "../utils/parser";
 
 const TypesMap: Record<string, string> = {
   画师: "painter",
@@ -554,9 +555,56 @@ export function Iter(): JSX.Element {
             cellOriginiumAssimilation: { data: coa, filter: "between" },
             bloodOriginiumCrystalDensity: { data: bocd, filter: "between" },
           }}
+          compareFunc={compare}
           render={MyCell}
         ></DataTable>
       </Paper>
     </div>
   );
+}
+const textOrder = ["缺陷", "普通", "标准", "优良", "卓越", "■■"];
+
+function compare(a: any, b: any, id: string): number {
+  const num = [
+    "height",
+    "cellOriginiumAssimilation",
+    "bloodOriginiumCrystalDensity",
+    "infectionStatus",
+  ];
+  const text = [
+    "combatExperience",
+    "physicalStrength",
+    "battlefieldManeuver",
+    "physiologicalTolerance",
+    "tacticalPlanning",
+    "combatSkills",
+    "originiumArtsAssimilation",
+  ];
+  let type = "string";
+  if (num.indexOf(id) != -1) {
+    type = "number";
+  } else if (text.indexOf(id) != -1) {
+    type = "text";
+  } else if (id == "birthday") {
+    type = "date";
+  }
+  switch (type) {
+    case "number":
+      return a - b;
+    case "string":
+      return (a as string).localeCompare(b);
+    case "text":
+      return textOrder.indexOf(a) - textOrder.indexOf(b);
+    case "date":
+      const [am, ad] = parseMD(a);
+      const [bm, bd] = parseMD(b);
+      const [deltaM, deltaD] = [am - bm, ad - bd];
+      if (deltaM == 0) {
+        return deltaD;
+      } else {
+        return deltaM;
+      }
+    default:
+      return (a as string).localeCompare(b);
+  }
 }
